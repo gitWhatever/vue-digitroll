@@ -1,22 +1,27 @@
 <template>
-  <div class="roll-wrapper">
+  <div class="d-roll-wrapper">
     <ul
       ref="list"
-      class="roll-list"
-      :style="{ height: `${cellHeight}px` }"
+      class="d-roll-list"
     >
       <li
         v-for="(item, i) of digitStatArr"
-        v-html="innerUnitHtml"
         :key="i"
-        :style="getliStyle(item)"
-      ></li>
+        class="d-roll-item"
+        :style="{ height: `${cellHeight}px` }"
+      >
+        <div
+          class="d-roll-bar"
+          v-html="innerUnitHtml"
+          :style="getliStyle(item)"
+        ></div>
+      </li>
     </ul>
   </div>
 </template>
 
 <script>
-import { Tween, arrayFrom, getHeight, supportCssCache, callExp } from '../util';
+import { Tween, arrayFromCache, getHeight, supportCssCache, callExp } from '../util';
 
 const FRAME_TIME = 1000 / 60;
 window.requestAnimationFrame = window.requestAnimationFrame || function raf(fn) {
@@ -31,34 +36,53 @@ export default {
       type: [String, Number],
       default: 1000,
     },
-    altern: {
-      type: [Boolean],
+    flipStra: {
+      type: [Function, Boolean],
+      default: null,
     },
     easeFn: {
       type: [String],
+      validator(value) {
+        const easeList = [
+          'Linear', 'Quad.easeIn', 'Quad.easeOut', 'Quad.easeInOut',
+          'Cubic.easeIn', 'Cubic.easeOut', 'Cubic.easeInOut',
+        ];
+        return easeList.indexOf(value) !== -1;
+      },
       default: 'Cubic.easeInOut',
     },
   },
 
   data() {
-    const divList = arrayFrom(10).map((n, i) => `<div>${i}</div>`);
-    const digitStatArr = arrayFrom(String(this.digits).length).map(() => ({ figure: 0 }));
+    const { digits, flipStra, defaultFlipStra } = this;
+    const divList = arrayFromCache(10).map((n, i) => `<div>${i}</div>`);
+    const digitStatArr = arrayFromCache(String(digits).length).map(() => ({ figure: 0 }));
+    let executeStra = null;
+    if (typeof flipStra === 'boolean') {
+      executeStra = () => flipStra;
+    } else {
+      executeStra = flipStra || defaultFlipStra;
+    }
+
     return {
       beforeDigits: '0',
       cellHeight: 0,
       innerUnitHtml: divList.concat(divList).join(''), // 2倍模板
       digitStatArr,
+      executeStra,
     };
   },
 
   watch: {
     digits(value, oldVal) {
-      if (`${oldVal}`.length !== `${value}`.length) {
-        /* eslint-disable no-console */
-        console.warn('检测到传入数字变化，改动不生效!');
-        /* eslint-enable no-console */
-        return;
+      const oldLen = `${oldVal}`.length;
+      const newLen = `${value}`.length;
+      if (oldLen !== newLen) {
+        const newArr = arrayFromCache(newLen);
+        this.digitStatArr = newArr.map(() => ({ figure: 0 }));
+        this.beforeDigits = newArr.map(() => 0).join('');
       }
+
       this.traverseChar();
     },
   },
@@ -67,7 +91,7 @@ export default {
     getliStyle(item) {
       const supportTransform = supportCssCache('transform');
       const offset = item.figure ? `${item.figure}px` : '0px';
-      if (!supportTransform) {
+      if (supportTransform) {
         const value = `translateY(${offset})`;
         return {
           transform: value,
@@ -84,7 +108,7 @@ export default {
     getComplete(total) {
       let count = 0;
       const vm = this;
-      return function complete() {
+      return function completeRoll() {
         if (++count >= total) {
           vm.beforeDigits = `${vm.digits}`;
         }
@@ -93,25 +117,31 @@ export default {
 
     traverseChar() {
       const vm = this;
-      const { digitStatArr, beforeDigits, altern } = vm;
+      const { digitStatArr, beforeDigits, executeStra } = vm;
       const digits = `${vm.digits}`;
-      const complete = vm.getComplete(digitStatArr.length);
+      const completeRoll = vm.getComplete(digitStatArr.length);
 
       digitStatArr.forEach((n, i) => {
         let dis = 0;
         const before = beforeDigits.charAt(i);
         const next = digits.charAt(i);
-        if (next <= before) {
-          if (altern || next < before) {
-            dis = (~~next + 10) - before;
-            // 确认滚动到下一页
-            vm.digitStatArr[i].flip = true;
-          }
-        } else if (next > before) {
+        const needFlip = executeStra(before, next);
+
+        if (needFlip) {
+          dis = (~~next + 10) - before;
+          vm.digitStatArr[i].flip = true;
+        } else {
           dis = next - before;
         }
-        vm.beginRoll(dis, i, complete);
+        vm.beginRoll(dis, i, completeRoll);
       });
+    },
+
+    defaultFlipStra(before, next) {
+      if (next < before) {
+        return true;
+      }
+      return false;
     },
 
     beginRoll(dis, i, cb) {
@@ -153,6 +183,12 @@ export default {
 
       step();
     },
+
+    /** for user */
+    setDigit(val) {
+      this.digits = val;
+      this.traverseChar();
+    },
   },
 
   created() {
@@ -161,30 +197,31 @@ export default {
 
   mounted() {
     const $list = this.$refs.list;
-    this.cellHeight = getHeight($list.querySelector('li>div'));
+    this.cellHeight = getHeight($list.querySelector('.d-roll-bar>div'));
     this.traverseChar();
   },
 };
 </script>
 
 <style>
-  .roll-wrapper{
+  .d-roll-wrapper{
     margin: 20px auto;
     width: 100%;
   }
-  .roll-list{
-    overflow: hidden;
+  .d-roll-list{
+    margin: 0 auto;
+    padding: 0;
     text-align: center;
-    position: relative;
     display: flex;
+    overflow: hidden;
   }
-  .roll-list li{
+  .d-roll-list .d-roll-item{
     list-style: none;
     float: left;
-    position: relative;
     flex-grow: 1;
+    overflow: hidden;
   }
-  .roll-list>li>div{
+  .d-roll-item>.d-roll-bar>div{
     line-height: 1.8;
   }
 </style>

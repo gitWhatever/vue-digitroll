@@ -1,6 +1,6 @@
 <template>
   <div style="width:320px;">
-    <DigitRoll :digits="digits" :altern="false" easeFn="Cubic.easeInOut"/>
+    <DigitRoll ref='digitroll' :digits="digits" :flipStra="true" easeFn="Cubic.easeInOut"/>
     <input type="text" v-model='input'>
     <button @click='changeDigit'>click me</button>
   </div>
@@ -14,13 +14,26 @@ export default {
   data() {
     return {
       input: '',
-      digits: '11111',
+      digits: '00001',
     };
   },
   methods: {
     changeDigit() {
-      this.digits = this.input.substr(0, 5);
-    }
+      this.digits = this.input;
+      // this.$refs.digitroll.setDigit(this.digits);
+    },
+    flipStra(before, next) {
+      return true;
+    },
+    flipStra2(before, next) {
+      return false;
+    },
+    flipStra3(before, next) {
+      if (next <= before) {
+        return true;
+      }
+      return false;
+    },
   },
   components: {
     DigitRoll,

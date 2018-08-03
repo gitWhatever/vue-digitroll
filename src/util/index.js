@@ -7,10 +7,11 @@ export function cached(fn) {
   };
 }
 
-export const arrayFrom = (len) => {
+const arrayFrom = (len) => {
   const loopArr = new Array(len).join(',').split(',');
   return loopArr;
 };
+export const arrayFromCache = cached(arrayFrom);
 
 export const getHeight = (el) => {
   let height = 0;
