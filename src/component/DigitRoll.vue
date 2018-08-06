@@ -32,14 +32,16 @@ export default {
   name: 'DigitRoll',
 
   props: {
-    digits: {
+    rollDigits: {
       type: [String, Number],
       default: 1000,
     },
+
     flipStra: {
       type: [Function, Boolean],
       default: null,
     },
+
     easeFn: {
       type: [String],
       validator(value) {
@@ -54,10 +56,10 @@ export default {
   },
 
   data() {
-    const { digits, flipStra, defaultFlipStra } = this;
+    const { rollDigits, flipStra, defaultFlipStra } = this;
     const divList = arrayFromCache(10).map((n, i) => `<div>${i}</div>`);
-    const digitStatArr = arrayFromCache(String(digits).length).map(() => ({ figure: 0 }));
     let executeStra = null;
+
     if (typeof flipStra === 'boolean') {
       executeStra = () => flipStra;
     } else {
@@ -65,22 +67,23 @@ export default {
     }
 
     return {
+      digits: `${rollDigits}`,
       beforeDigits: '0',
       cellHeight: 0,
       innerUnitHtml: divList.concat(divList).join(''), // 2倍模板
-      digitStatArr,
+      digitStatArr: [],
       executeStra,
     };
   },
 
   watch: {
-    digits(value, oldVal) {
+    rollDigits(value, oldVal) {
       const oldLen = `${oldVal}`.length;
       const newLen = `${value}`.length;
+      this.digits = `${value}`;
+
       if (oldLen !== newLen) {
-        const newArr = arrayFromCache(newLen);
-        this.digitStatArr = newArr.map(() => ({ figure: 0 }));
-        this.beforeDigits = newArr.map(() => 0).join('');
+        this.resetStat(newLen);
       }
 
       this.traverseChar();
@@ -88,6 +91,12 @@ export default {
   },
 
   methods: {
+    resetStat(len) {
+      const newArr = arrayFromCache(len);
+      this.digitStatArr = newArr.map(() => ({ figure: 0 }));
+      this.beforeDigits = newArr.map(() => 0).join('');
+    },
+
     getliStyle(item) {
       const supportTransform = supportCssCache('transform');
       const offset = item.figure ? `${item.figure}px` : '0px';
@@ -105,27 +114,32 @@ export default {
         marginTop: offset,
       };
     },
+
     getComplete(total) {
       let count = 0;
       const vm = this;
       return function completeRoll() {
         if (++count >= total) {
           vm.beforeDigits = `${vm.digits}`;
+          vm.$emit('roll-finish');
         }
       };
     },
 
-    traverseChar() {
+    traverseChar(opts = null) {
       const vm = this;
-      const { digitStatArr, beforeDigits, executeStra } = vm;
-      const digits = `${vm.digits}`;
+      const { digitStatArr, digits, beforeDigits, executeStra } = vm;
       const completeRoll = vm.getComplete(digitStatArr.length);
+
+      vm.$emit('roll-start');
 
       digitStatArr.forEach((n, i) => {
         let dis = 0;
         const before = beforeDigits.charAt(i);
         const next = digits.charAt(i);
-        const needFlip = executeStra(before, next);
+        const opt = opts instanceof Array ? opts[i] : {};
+        const optFlipStra = typeof opt.flipStra === 'boolean' ? () => opt.flipStra : opt.flipStra;
+        const needFlip = optFlipStra ? optFlipStra(before, next) : executeStra(before, next);
 
         if (needFlip) {
           dis = (~~next + 10) - before;
@@ -133,7 +147,7 @@ export default {
         } else {
           dis = next - before;
         }
-        vm.beginRoll(dis, i, completeRoll);
+        vm.beginRoll(dis, i, completeRoll, opt);
       });
     },
 
@@ -144,18 +158,18 @@ export default {
       return false;
     },
 
-    beginRoll(dis, i, cb) {
+    beginRoll(dis, i, cb, opt) {
       const vm = this;
       const { cellHeight, digitStatArr } = vm;
 
       let now = 0;
       const start = 0;
       const end = cellHeight * dis;
-      const dur = 1000;
+      const dur = opt.dur || 1000;
       const curStat = digitStatArr[i];
       const beforeOffset = curStat.figure || 0;
       const prePageOffset = cellHeight * 10;
-      const easeFn = callExp(Tween, vm.easeFn);
+      const easeFn = callExp(Tween, opt.easeFn || vm.easeFn);
 
       function step() {
         const offset = easeFn(now, start, end, dur);
@@ -185,14 +199,29 @@ export default {
     },
 
     /** for user */
-    setDigit(val) {
-      this.digits = val;
-      this.traverseChar();
+    setDigit(digit, opt) {
+      let opts = null;
+      /** formate opts */
+      if (typeof digit === 'string') {
+        this.digits = `${digit}`;
+        if (opt) {
+          opts = arrayFromCache(this.digits.length).map(() => opt);
+        }
+      } else if (digit instanceof Array) {
+        this.digits = digit.map(item => item.value).join('');
+        opts = digit;
+      }
+
+      if (this.digits.length !== this.beforeDigits.length) {
+        this.resetStat(this.digits.length);
+      }
+
+      this.traverseChar(opts);
     },
   },
 
   created() {
-    this.beforeDigits = this.digitStatArr.map(() => 0).join('');
+    this.resetStat(this.digits.length);
   },
 
   mounted() {

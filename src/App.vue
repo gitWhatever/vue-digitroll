@@ -1,6 +1,13 @@
 <template>
   <div style="width:320px;">
-    <DigitRoll ref='digitroll' :digits="digits" :flipStra="true" easeFn="Cubic.easeInOut"/>
+    <DigitRoll
+      ref='digitroll'
+      :rollDigits="digits"
+      :flipStra="true"
+      easeFn="Cubic.easeInOut"
+      @roll-start="record"
+      @roll-finish="record"
+    />
     <input type="text" v-model='input'>
     <button @click='changeDigit'>click me</button>
   </div>
@@ -14,13 +21,29 @@ export default {
   data() {
     return {
       input: '',
-      digits: '00001',
+      digits: 111,
     };
   },
   methods: {
     changeDigit() {
-      this.digits = this.input;
-      // this.$refs.digitroll.setDigit(this.digits);
+      // this.digits = this.input;
+
+      // this.$refs.digitroll.setDigit(this.input, {
+      //   flipStra: this.flipStra,
+      //   easeFn: 'Cubic.easeInOut',
+      //   dur: 400,
+      // });
+
+      this.$refs.digitroll.setDigit([{
+        value: 2,
+        dur: 1800,
+      }, {
+        value: 5,
+        dur: 1200,
+      }, {
+        value: 9,
+        dur: 600,
+      }]);
     },
     flipStra(before, next) {
       return true;
@@ -34,6 +57,9 @@ export default {
       }
       return false;
     },
+    record() {
+      console.log('lala')
+    }
   },
   components: {
     DigitRoll,
