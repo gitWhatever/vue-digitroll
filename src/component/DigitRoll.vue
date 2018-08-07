@@ -5,7 +5,7 @@
       class="d-roll-list"
     >
       <li
-        v-for="(item, i) of digitStatArr"
+        v-for="(item, i) of digitOffsetArr"
         :key="i"
         class="d-roll-item"
         :style="{ height: `${cellHeight}px` }"
@@ -34,6 +34,11 @@ export default {
   props: {
     rollDigits: {
       type: [String, Number],
+      default: 1000,
+    },
+
+    dur: {
+      type: Number,
       default: 1000,
     },
 
@@ -70,8 +75,10 @@ export default {
       digits: `${rollDigits}`,
       beforeDigits: '0',
       cellHeight: 0,
+      maxDur: 0,
       innerUnitHtml: divList.concat(divList).join(''), // 2倍模板
       digitStatArr: [],
+      digitOffsetArr: [],
       executeStra,
     };
   },
@@ -93,13 +100,14 @@ export default {
   methods: {
     resetStat(len) {
       const newArr = arrayFromCache(len);
+      this.digitOffsetArr = newArr.map(() => 0);
       this.digitStatArr = newArr.map(() => ({ figure: 0 }));
       this.beforeDigits = newArr.map(() => 0).join('');
     },
 
     getliStyle(item) {
       const supportTransform = supportCssCache('transform');
-      const offset = item.figure ? `${item.figure}px` : '0px';
+      const offset = item ? `${item}px` : '0px';
       if (supportTransform) {
         const value = `translateY(${offset})`;
         return {
@@ -160,37 +168,45 @@ export default {
 
     beginRoll(dis, i, cb, opt) {
       const vm = this;
-      const { cellHeight, digitStatArr } = vm;
-
-      let now = 0;
+      const { cellHeight, digitStatArr, maxDur, dur: defaultDur } = vm;
       const start = 0;
       const end = cellHeight * dis;
-      const dur = opt.dur || 1000;
+      const dur = opt.dur || defaultDur;
+      const judgeFinish = Math.max(dur, maxDur);
       const curStat = digitStatArr[i];
       const beforeOffset = curStat.figure || 0;
       const prePageOffset = cellHeight * 10;
-      const easeFn = callExp(Tween, opt.easeFn || vm.easeFn);
+
+      let now = 0;
+      let easeFn = callExp(Tween, opt.easeFn || vm.easeFn);
+      easeFn = easeFn || Tween.Cubic.easeInOut;
 
       function step() {
-        const offset = easeFn(now, start, end, dur);
-        vm.$set(curStat, 'figure', beforeOffset - offset);
+        const offset = Math.min(easeFn(now, start, end, dur), end);
+        curStat.figure = beforeOffset - offset;
 
-        if (now === dur) {
-          if (curStat.flip) {
-            const overOffset = curStat.figure;
-            vm.$set(curStat, 'figure', overOffset + prePageOffset);
-            curStat.flip = !!0;
-          }
+        if (now === judgeFinish && curStat.flip) {
+          const overOffset = curStat.figure;
+          curStat.figure = overOffset + prePageOffset;
+          curStat.flip = !!0;
+        }
+
+        /** optimize combo one frame reflow by vue */
+        if (i === digitStatArr.length - 1) {
+          vm.digitOffsetArr = digitStatArr.map(item => item.figure);
+        }
+
+        if (now === judgeFinish) {
           cb && cb(i);
           return;
         }
 
         now += FRAME_TIME;
 
-        if (now < dur) {
+        if (now < judgeFinish) {
           requestAnimationFrame(step);
         } else {
-          now = dur;
+          now = judgeFinish;
           requestAnimationFrame(step);
         }
       }
@@ -200,23 +216,28 @@ export default {
 
     /** for user */
     setDigit(digit, opt) {
+      const vm = this;
       let opts = null;
       /** formate opts */
       if (typeof digit === 'string') {
-        this.digits = `${digit}`;
+        vm.digits = `${digit}`;
         if (opt) {
-          opts = arrayFromCache(this.digits.length).map(() => opt);
+          opts = arrayFromCache(vm.digits.length).map(() => opt);
         }
       } else if (digit instanceof Array) {
-        this.digits = digit.map(item => item.value).join('');
+        vm.digits = digit.map(({ value, dur }) => {
+          if (dur > vm.maxDur) {
+            vm.maxDur = dur;
+          }
+          return value;
+        }).join('');
         opts = digit;
       }
-
-      if (this.digits.length !== this.beforeDigits.length) {
-        this.resetStat(this.digits.length);
+      if (vm.digits.length !== vm.beforeDigits.length) {
+        vm.resetStat(vm.digits.length);
       }
 
-      this.traverseChar(opts);
+      vm.traverseChar(opts);
     },
   },
 

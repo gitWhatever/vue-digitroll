@@ -48,8 +48,13 @@ export const supportCssCache = cached(supportCss3);
 
 export const callExp = (main, exp) => {
   const layerList = exp.split('.').filter(Boolean);
-  return layerList.reduce((prev, next) => prev[next], main);
+  let value = null;
+  try {
+    value = layerList.reduce((prev, next) => prev[next], main);
+  } catch (ex) {
+    value = null;
+  }
+  return value;
 };
 
 export { Tween } from './Tween';
-

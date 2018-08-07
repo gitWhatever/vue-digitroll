@@ -26,7 +26,7 @@ export default {
   },
   methods: {
     changeDigit() {
-      // this.digits = this.input;
+      this.digits = this.input;
 
       // this.$refs.digitroll.setDigit(this.input, {
       //   flipStra: this.flipStra,
@@ -34,16 +34,16 @@ export default {
       //   dur: 400,
       // });
 
-      this.$refs.digitroll.setDigit([{
-        value: 2,
-        dur: 1800,
-      }, {
-        value: 5,
-        dur: 1200,
-      }, {
-        value: 9,
-        dur: 600,
-      }]);
+      // this.$refs.digitroll.setDigit([{
+      //   value: 2,
+      //   dur: 1800,
+      // }, {
+      //   value: 5,
+      //   dur: 1200,
+      // }, {
+      //   value: 9,
+      //   dur: 600,
+      // }]);
     },
     flipStra(before, next) {
       return true;
@@ -58,7 +58,6 @@ export default {
       return false;
     },
     record() {
-      console.log('lala')
     }
   },
   components: {

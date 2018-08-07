@@ -29,6 +29,7 @@ vue实现的数字滚动组件
 
 ### Props
 这里缓动函数只提供几种基本的动画形式，[缓动函数的基础概念可点击这里查看](https://developers.google.com/web/fundamentals/design-and-ux/animations/the-basics-of-easing?hl=zh-cn)
+
 | 参数 | 说明 | 类型 | 可选值 | 默认值 |
 | --- | --- | --- | --- | --- |
 | rollDigits  | 滚动到的数字 | [String, Number]  | - | 1000 |
