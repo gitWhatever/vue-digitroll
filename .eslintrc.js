@@ -49,6 +49,7 @@ module.exports = {
     'no-plusplus': 'off',
     'no-bitwise': 'off',
     'no-return-assign': 'off',
+    'no-param-reassign': ["error", { "props": false }],
     'no-unused-expressions': ["error", { "allowShortCircuit": true, "allowTernary": true }]
   }
 }

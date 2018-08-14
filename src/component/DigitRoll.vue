@@ -13,7 +13,7 @@
         <div
           class="d-roll-bar"
           v-html="innerUnitHtml"
-          :style="getliStyle(item)"
+          :style="getliStyle(item, i)"
         ></div>
       </li>
     </ul>
@@ -21,11 +21,16 @@
 </template>
 
 <script>
-import { Tween, arrayFromCache, getHeight, supportCssCache, callExp } from '../util';
+import { Tween, easeToCubicMap, arrayFromCache, getHeight, supportCssCache, callExp } from '../util';
 
+let rollLock = false;
+let supportCss = supportCssCache;
 const FRAME_TIME = 1000 / 60;
-window.requestAnimationFrame = window.requestAnimationFrame || function raf(fn) {
-  setTimeout(fn, FRAME_TIME);
+const defaultFlipStra = (before, next) => {
+  if (next < before) {
+    return true;
+  }
+  return false;
 };
 
 export default {
@@ -49,19 +54,12 @@ export default {
 
     easeFn: {
       type: [String],
-      validator(value) {
-        const easeList = [
-          'Linear', 'Quad.easeIn', 'Quad.easeOut', 'Quad.easeInOut',
-          'Cubic.easeIn', 'Cubic.easeOut', 'Cubic.easeInOut',
-        ];
-        return easeList.indexOf(value) !== -1;
-      },
       default: 'Cubic.easeInOut',
     },
   },
 
   data() {
-    const { rollDigits, flipStra, defaultFlipStra } = this;
+    const { rollDigits, flipStra } = this;
     const divList = arrayFromCache(10).map((n, i) => `<div>${i}</div>`);
     let executeStra = null;
 
@@ -85,6 +83,9 @@ export default {
 
   watch: {
     rollDigits(value, oldVal) {
+      if (rollLock) {
+        return;
+      }
       const oldLen = `${oldVal}`.length;
       const newLen = `${value}`.length;
       this.digits = `${value}`;
@@ -105,22 +106,39 @@ export default {
       this.beforeDigits = newArr.map(() => 0).join('');
     },
 
-    getliStyle(item) {
-      const supportTransform = supportCssCache('transform');
-      const offset = item ? `${item}px` : '0px';
-      if (supportTransform) {
-        const value = `translateY(${offset})`;
-        return {
-          transform: value,
-          webkitTransform: value,
-          mozTransform: value,
-          oTransform: value,
+    getliStyle(item, i) {
+      const transformPrefix = supportCss('transform');
+      if (transformPrefix) {
+        this.getliStyle = function getTransformStyle(tItem, ti) {
+          const offset = tItem ? `${tItem}px` : '0px';
+          const value = `translateY(${offset})`;
+          const curStat = this.digitStatArr[ti];
+          const easeFn = curStat.easeFn || this.easeFn;
+          const transitionFunc = easeToCubicMap[easeFn] || easeFn;
+          const msDur = curStat.dur || this.dur;
+          const sDurStr = `${msDur / 1000}s`;
+          const transProperty = typeof transformPrefix !== 'boolean' ? `-${transformPrefix}-transform` : 'transform';
+          const transStyles = !curStat.noTransition ? {
+            transition: `${transProperty} ${sDurStr} ${transitionFunc}`,
+          } : {};
+
+          /** Vue会自动侦测并添加相应的前缀,无需自己添加属性前缀  */
+          return {
+            ...transStyles,
+            transform: value,
+          };
+        };
+      } else {
+        this.getliStyle = function getMarginStyle(mItem) {
+          const offset = mItem ? `${mItem}px` : '0px';
+
+          return {
+            marginTop: offset,
+          };
         };
       }
 
-      return {
-        marginTop: offset,
-      };
+      this.getliStyle(item, i);
     },
 
     getComplete(total) {
@@ -129,7 +147,10 @@ export default {
       return function completeRoll() {
         if (++count >= total) {
           vm.beforeDigits = `${vm.digits}`;
-          vm.$emit('roll-finish');
+          setTimeout(() => {
+            rollLock = false;
+            vm.$emit('roll-finish');
+          });
         }
       };
     },
@@ -139,9 +160,10 @@ export default {
       const { digitStatArr, digits, beforeDigits, executeStra } = vm;
       const completeRoll = vm.getComplete(digitStatArr.length);
 
+      rollLock = true;
       vm.$emit('roll-start');
 
-      digitStatArr.forEach((n, i) => {
+      digitStatArr.forEach((stat, i) => {
         let dis = 0;
         const before = beforeDigits.charAt(i);
         const next = digits.charAt(i);
@@ -155,22 +177,67 @@ export default {
         } else {
           dis = next - before;
         }
-        vm.beginRoll(dis, i, completeRoll, opt);
+        if (supportCss('transform')) {
+          stat.noTransition = !!0;
+          vm.beginCssRoll(dis, i, completeRoll, opt);
+        } else {
+          vm.beginRoll(dis, i, completeRoll, opt);
+        }
       });
     },
 
-    defaultFlipStra(before, next) {
-      if (next < before) {
-        return true;
-      }
-      return false;
+    beginCssRoll(dis, i, cb, opt) {
+      const vm = this;
+      const transitionPrefix = supportCss('transition');
+      const transitionEnd = (function whichTransitionEvent(prefix) {
+        const pre = prefix.toLowerCase();
+        if (typeof prefix === 'boolean' || pre === 'moz') {
+          return 'transitionend';
+        }
+        return `${pre}TransitionEnd`;
+      }(transitionPrefix));
+
+      this.beginCssRoll = (aDis, ai, aCb, aOpt) => {
+        const { cellHeight, digitStatArr, digitOffsetArr, dur: defaultDur } = vm;
+        const curStat = digitStatArr[ai];
+        const rollOffset = cellHeight * aDis;
+        const beforeOffset = curStat.figure || 0;
+        const prePageOffset = cellHeight * 10; // 单倍模板距离
+        const $list = vm.$refs.list;
+        const $curBar = $list.querySelector(`li:nth-child(${ai + 1}) .d-roll-bar`);
+
+        if (rollOffset === 0) {
+          aCb && aCb(i);
+          return;
+        }
+
+        curStat.figure = beforeOffset - rollOffset;
+        curStat.dur = aOpt.dur || defaultDur;
+
+        vm.$set(digitOffsetArr, ai, beforeOffset - rollOffset);
+
+        $curBar.addEventListener(transitionEnd, function transitionDone() {
+          if (curStat.flip) {
+            const overOffset = curStat.figure;
+            curStat.figure = overOffset + prePageOffset;
+            curStat.noTransition = !!1;
+            curStat.flip = !!0;
+          }
+
+          vm.$set(digitOffsetArr, ai, curStat.figure);
+          $curBar.removeEventListener(transitionEnd, transitionDone);
+          aCb && aCb(i);
+        });
+      };
+
+      this.beginCssRoll(dis, i, cb, opt);
     },
 
     beginRoll(dis, i, cb, opt) {
       const vm = this;
       const { cellHeight, digitStatArr, maxDur, dur: defaultDur } = vm;
       const start = 0;
-      const end = cellHeight * dis;
+      const rollOffset = cellHeight * dis;
       const dur = opt.dur || defaultDur;
       const judgeFinish = Math.max(dur, maxDur);
       const curStat = digitStatArr[i];
@@ -182,7 +249,7 @@ export default {
       easeFn = easeFn || Tween.Cubic.easeInOut;
 
       function step() {
-        const offset = Math.min(easeFn(now, start, end, dur), end);
+        const offset = Math.min(easeFn(now, start, rollOffset, dur), rollOffset);
         curStat.figure = beforeOffset - offset;
 
         if (now === judgeFinish && curStat.flip) {
@@ -218,6 +285,10 @@ export default {
     setDigit(digit, opt) {
       const vm = this;
       let opts = null;
+
+      if (rollLock) {
+        return;
+      }
       /** formate opts */
       if (typeof digit === 'string') {
         vm.digits = `${digit}`;
@@ -243,11 +314,30 @@ export default {
 
   created() {
     this.resetStat(this.digits.length);
+    /** 警告：单元测试设置，请勿自己设置，影响属性判断 */
+    if (this.$attrs && this.$attrs.unitTest) {
+      supportCss = (pro) => {
+        if (this.$attrs.unitTest.supportCssTransForm) {
+          return supportCssCache(pro);
+        }
+        return false;
+      };
+    }
+    // supportCss = function() {
+    //   return false;
+    // }
   },
 
   mounted() {
     const $list = this.$refs.list;
+
     this.cellHeight = getHeight($list.querySelector('.d-roll-bar>div'));
+
+    /** 警告：单元测试设置，请勿自己设置，影响正常计算 */
+    if (!this.cellHeight && this.$attrs && this.$attrs.unitTest) {
+      this.cellHeight = this.$attrs.unitTest.cellHeight;
+    }
+
     this.traverseChar();
   },
 };

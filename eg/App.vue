@@ -1,11 +1,10 @@
 <template>
-  <div style="width:320px;">
+  <div style="width:320px;" id="app">
     <DigitRoll
       ref='digitroll'
-      :rollDigits="digits"
-      :flipStra="true"
-      easeFn="Cubic.easeInOut"
-      @roll-start="record"
+      :rollDigits='digits'
+      :flipStra = "true"
+      easeFn=""
       @roll-finish="record"
     />
     <input type="text" v-model='input'>
@@ -14,25 +13,25 @@
 </template>
 
 <script>
-import DigitRoll from './component/DigitRoll';
+import DigitRoll from '../src/component/DigitRoll';
 
 export default {
   name: 'App',
   data() {
     return {
       input: '',
-      digits: 111,
+      digits: '0000',
     };
   },
   methods: {
     changeDigit() {
-      this.digits = this.input;
+      // this.digits = this.input;
 
-      // this.$refs.digitroll.setDigit(this.input, {
-      //   flipStra: this.flipStra,
-      //   easeFn: 'Cubic.easeInOut',
-      //   dur: 400,
-      // });
+      this.$refs.digitroll.setDigit(this.input, {
+        flipStra: this.flipStra,
+        easeFn: 'Cubic.easeInOut',
+        dur: 800,
+      });
 
       // this.$refs.digitroll.setDigit([{
       //   value: 2,
@@ -58,7 +57,11 @@ export default {
       return false;
     },
     record() {
-    }
+      console.log('finish');
+      // const random = `${Math.random()}`.substr(2).substr(0, 4);
+      // console.log(random);
+      // this.digits = random;
+    },
   },
   components: {
     DigitRoll,

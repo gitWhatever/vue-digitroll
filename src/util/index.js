@@ -39,7 +39,7 @@ const supportCss3 = (style) => {
 
   humpString.push(_toHumb(style));
 
-  for (i in humpString) { if (humpString[i] in htmlStyle) return true; }
+  for (i in humpString) { if (humpString[i] in htmlStyle) return (prefix[i] || true); }
 
   return false;
 };
@@ -50,11 +50,23 @@ export const callExp = (main, exp) => {
   const layerList = exp.split('.').filter(Boolean);
   let value = null;
   try {
-    value = layerList.reduce((prev, next) => prev[next], main);
+    if (layerList.length) {
+      value = layerList.reduce((prev, next) => prev[next], main);
+    }
   } catch (ex) {
     value = null;
   }
   return value;
+};
+
+export const easeToCubicMap = {
+  'Cubic.easeInOut': 'cubic-bezier(0.65, 0.05, 0.36, 1)',
+  'Cubic.easeIn': 'cubic-bezier(0.55, 0.06, 0.68, 0.19)',
+  'Cubic.easeOut': 'cubic-bezier(0.22, 0.61, 0.36, 1)',
+  'Quad.easeIn': 'cubic-bezier(0.55, 0.09, 0.68, 0.53)',
+  'Quad.easeOut': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+  'Quad.easeInOut': 'cubic-bezier(0.46, 0.03, 0.52, 0.96)',
+  Linear: 'linear',
 };
 
 export { Tween } from './Tween';
