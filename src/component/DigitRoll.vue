@@ -150,7 +150,7 @@ export default {
           setTimeout(() => {
             rollLock = false;
             vm.$emit('roll-finish');
-          });
+          }, 4);
         }
       };
     },
@@ -285,12 +285,11 @@ export default {
     setDigit(digit, opt) {
       const vm = this;
       let opts = null;
-
       if (rollLock) {
         return;
       }
       /** formate opts */
-      if (typeof digit === 'string') {
+      if (typeof digit === 'string' || typeof digit === 'number') {
         vm.digits = `${digit}`;
         if (opt) {
           opts = arrayFromCache(vm.digits.length).map(() => opt);

@@ -65,27 +65,43 @@ describe('DigitRoll.vue', () => {
 
     test('invalid easnFn should be work', (done) => {
       const wrapper2 = utils.getWrapper(false, {
-        easeFn: '',
+        easeFn: 'zzzzz',
         rollDigits: 4321,
       });
       wrapper2.vm.$on('roll-finish', () => {
         expect(wrapper2.vm.digitOffsetArr).toEqual(utils.getOffsetByDigit('4321'));
         done();
+      });
+    });
 
-        wrapper2.setProps({ rollDigits: 5555, easeFn: 'ease' });
+    test('setDigit should be work', (done) => {
+      const wrapper2 = utils.getWrapper(false, { rollDigits: 3000 });
+      wrapper2.vm.$on('roll-finish', () => {
+        wrapper2.vm.setDigit(2500);
+
         wrapper2.vm.$on('roll-finish', () => {
-          expect(wrapper2.vm.digitOffsetArr).toEqual(utils.getOffsetByDigit('5555'));
+          expect(wrapper2.vm.digitOffsetArr).toEqual(utils.getOffsetByDigit('2500'));
           done();
         });
       });
     });
 
-    test('setDigit should be work', (done) => {
-      const wrapper3 = utils.getWrapper(false, { rollDigits: 3000 });
-      wrapper3.vm.$on('roll-finish', () => {
-        wrapper3.vm.setDigit(2500);
-        wrapper3.vm.$on('roll-finish', () => {
-          expect(wrapper3.vm.digitOffsetArr).toEqual(utils.getOffsetByDigit('2500'));
+    test('setDigit with array should be work', (done) => {
+      const wrapper2 = utils.getWrapper(false);
+      wrapper2.vm.$on('roll-finish', () => {
+        wrapper2.vm.setDigit([{
+          value: 2,
+          dur: 1800,
+        }, {
+          value: 5,
+          dur: 1200,
+        }, {
+          value: 9,
+          dur: 600,
+        }]);
+
+        wrapper2.vm.$on('roll-finish', () => {
+          expect(wrapper2.vm.digitOffsetArr).toEqual(utils.getOffsetByDigit('259'));
           done();
         });
       });
