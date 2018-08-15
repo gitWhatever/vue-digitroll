@@ -322,9 +322,6 @@ export default {
         return false;
       };
     }
-    // supportCss = function() {
-    //   return false;
-    // }
   },
 
   mounted() {
@@ -362,5 +359,6 @@ export default {
   }
   .d-roll-item>.d-roll-bar>div{
     line-height: 1.8;
+    box-sizing: border-box !important;
   }
 </style>
