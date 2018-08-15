@@ -31,7 +31,9 @@ vue实现的数字滚动组件
 
 ## advance usage(进阶玩发)
 正常上下滚动
-![a2](media/15023352576572/a2.gif)
+
+![a2](/gif/a2.gif)
+
 关键代码
 ```
 <template>
@@ -53,8 +55,10 @@ function restart() {
 }
 ```
 
-永远翻屏滚动
-![a1](media/15023352576572/a1.gif)
+一直是翻屏滚动
+
+![a1](/gif/a1.gif)
+
 ```
 <template>
   <div style="width:320px;margin:0 auto" id="app">
@@ -76,6 +80,9 @@ function restart() {
 ```
 
 当下一个数字小于等于当前数字时翻屏滚动
+
+![a4](/gif/a4.gif)
+
 ```
 <template>
   <div style="width:320px;margin:0 auto" id="app">
@@ -98,8 +105,34 @@ flipStra3(before, next) {
 },
 ```
 
+数字无变化时也滚动
+
+![a5](/gif/a5.gif)
+
+关键代码
+```
+<template>
+  <div style="width:320px;margin:0 auto" id="app">
+    <DigitRoll
+      ref='digitroll'
+      :rollDigits='digits'
+      :flipStra = "true"
+    />
+    <input type="text" v-model='input'>
+    <button @click='changeDigit'>click me</button>
+  </div>
+</template>
+
+/**  vue methods */
+function changeDigit() {
+  this.$refs.digitroll.setDigit(this.input);
+}
+```
+
 每个数字渐进滚动
+
 ![a3](media/15023352576572/a3.gif)
+
 关键代码
 ```
 <template>
@@ -180,7 +213,7 @@ digit(String || Number):需要滚动到的数字
 或者
   ======
 
-opts(Array<opt: Object >):以数组形式针对每个数字做不同设置：
+opts(Array<opt: Object >):以数组形式针对每个数字做不同设置
 
     opt参数如下：
     value: 下次需要滚动到的数字 
