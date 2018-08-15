@@ -30,7 +30,7 @@ vue实现的数字滚动组件
 ```
 
 ## advance usage(进阶玩发)
-正常上下滚动
+#### 正常上下滚动
 
 ![a2](/gif/a2.gif)
 
@@ -55,10 +55,11 @@ function restart() {
 }
 ```
 
-一直是翻屏滚动
+#### 一直是翻屏滚动
 
 ![a1](/gif/a1.gif)
 
+关键代码
 ```
 <template>
   <div style="width:320px;margin:0 auto" id="app">
@@ -79,10 +80,11 @@ function restart() {
 }
 ```
 
-当下一个数字小于等于当前数字时翻屏滚动
+#### 当下一个数字小于等于当前数字时翻屏滚动
 
 ![a4](/gif/a4.gif)
 
+关键代码
 ```
 <template>
   <div style="width:320px;margin:0 auto" id="app">
@@ -105,7 +107,7 @@ flipStra3(before, next) {
 },
 ```
 
-数字无变化时也滚动
+#### 数字无变化时也滚动
 
 ![a5](/gif/a5.gif)
 
@@ -129,7 +131,7 @@ function changeDigit() {
 }
 ```
 
-每个数字渐进滚动
+#### 每个数字渐进滚动
 
 ![a3](/gif/a3.gif)
 

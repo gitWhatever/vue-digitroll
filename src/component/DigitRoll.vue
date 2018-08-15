@@ -111,7 +111,7 @@ export default {
       if (transformPrefix) {
         this.getliStyle = function getTransformStyle(tItem, ti) {
           const offset = tItem ? `${tItem}px` : '0px';
-          const value = `translateY(${offset})`;
+          const value = `translateY(${offset}) translateZ(0)`;
           const curStat = this.digitStatArr[ti];
           const easeFn = curStat.easeFn || this.easeFn;
           const transitionFunc = easeToCubicMap[easeFn] || easeFn;
@@ -356,6 +356,10 @@ export default {
     float: left;
     flex-grow: 1;
     overflow: hidden;
+  }
+  .d-roll-item>.d-roll-bar{
+    backface-visibility: hidden;
+    perspective: 1000;
   }
   .d-roll-item>.d-roll-bar>div{
     line-height: 1.8;
