@@ -131,7 +131,7 @@ function changeDigit() {
 
 每个数字渐进滚动
 
-![a3](media/15023352576572/a3.gif)
+![a3](/gif/a3.gif)
 
 关键代码
 ```
