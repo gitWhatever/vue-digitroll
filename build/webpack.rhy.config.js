@@ -11,12 +11,11 @@ module.exports = {
         VueDigitRoll: './src/index.js'
     },
     output: {
-        path: path.resolve(__dirname, '../dist'),
-        publicPath: '/dist/',
-        filename: 'vue-digitroll.min.js',
+        path: path.resolve(__dirname, '../lib'),
+        publicPath: '/lib/',
+        filename: 'index.js',
         library: 'VueDigitRoll',
-        libraryTarget: 'umd',
-        umdNamedDefine: true
+        libraryTarget: 'commonjs',
     },
     externals: {
         vue: {

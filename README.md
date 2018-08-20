@@ -203,22 +203,32 @@ function changeDigit() {
 
 setDigit提供更加灵活的操作数字滚动的方式。可以为下一次滚动做一次单独的设置，甚至可以单独配置每一个数字的滚动行为，而不会覆盖整体的props。方法提供两种参数形式：
 
-digit(String || Number):需要滚动到的数字
+```js
+// 第一种 digit必传  opt可缺省
+this.$refs.digitroll.setDigit('2459', {
+  dur: '2000', 
+  easeFn: 'ease',
+  flipStra: true,
+});
+```
+ -----
 
-\[opt\]\(Object\): 滚动的配置选项。
-
-    opt参数如下：
-    dur: 滚动时间 
-    easeFn: 滚动动画
-    flipStra：滚动时的翻屏策略
-
-或者
-  ======
-
-opts(Array<opt: Object >):以数组形式针对每个数字做不同设置
-
-    opt参数如下：
-    value: 下次需要滚动到的数字 
-    dur: 滚动时间
-    easeFn: 滚动动画
-    flipStra：滚动时的翻屏策略
+```js
+// 第二种
+this.$refs.digitroll.setDigit([{
+  value: 2,
+  dur: 600,
+  easeFn: 'ease',
+}, {
+  value: 4,
+  dur: 900,
+  flipStra: true,
+}, {
+  value: 6,
+  dur: 1200,
+  flipStra: false,
+}, {
+  value: 8,
+  dur: 1500,
+}]);
+```

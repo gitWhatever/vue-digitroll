@@ -12,8 +12,9 @@
     "lint": "eslint --ext .js,.vue src test/unit",
     "fix": "eslint --fix",
     "build": "node build/build.js",
-    "prod": "webpack --config build/webpack.rhy.config.js",
-    "e2e": "node test/e2e/runner.js"
+    "prod": "rm -rf ./lib/ && webpack --config build/webpack.rhy.config.js",
+    "e2e": "node test/e2e/runner.js",
+    "prepare": "npm run prod"
   },
   "peerDependencies": {
     "vue": "^2.5.2"
@@ -86,8 +87,5 @@
     "> 1%",
     "last 2 versions",
     "not ie <= 8"
-  ],
-  "dependencies": {
-    "vue": "^2.5.17"
-  }
+  ]
 }

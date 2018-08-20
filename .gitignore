@@ -6,11 +6,15 @@ yarn-error.log*
 selenium-debug.log*
 /test/unit/coverage/
 /test/e2e/**
+lib/
+dist/
 
 # Editor directories and files
 .idea
 .vscode
+.editorconfig
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
+
