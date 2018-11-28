@@ -8,6 +8,11 @@ vue实现的数字滚动组件
   * 配置灵活：支持参数自定义配置滚动效果，滚动时间以及如何滚动的策略（后续会单独讲到）
   * 支持良好：用户可覆写整体样式，实现自己的界面样式，digitroll会在组件挂在之后读取对应高度，进行滚动。
 
+## Installation
+```
+$ npm i -S @huoyu/vue-digitroll
+```
+
 ## basic usage
 ```
 <template>
@@ -17,7 +22,7 @@ vue实现的数字滚动组件
 </template>
 
 <script>
-  import DigitRoll from 'vue-digitroll';
+  import DigitRoll from '@huoyu/vue-digitroll';
   export default {
     components: { DigitRoll },
     data () {

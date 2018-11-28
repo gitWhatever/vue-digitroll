@@ -1,9 +1,14 @@
 {
-  "name": "vue-digitroll",
-  "version": "1.0.0",
-  "description": "A Vue.js project",
+  "name": "@huoyu/vue-digitroll",
+  "version": "1.0.1",
+  "description": "vue组件实现数字滚动效果，轻量，灵活",
   "author": "火禹 <Benren9347@gmail.com>",
-  "private": true,
+  "keywords": [
+    "vue",
+    "animation",
+    "digit",
+    "roll"
+  ],
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
@@ -18,6 +23,14 @@
   },
   "peerDependencies": {
     "vue": "^2.5.2"
+  },
+  "homepage": "https://github.com/gitWhatever/vue-digitroll",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gitWhatever/vue-digitroll"
+  },
+  "bugs": {
+    "url": "https://github.com/gitWhatever/vue-digitroll/issues"
   },
   "devDependencies": {
     "@vue/test-utils": "^1.0.0-beta.24",
