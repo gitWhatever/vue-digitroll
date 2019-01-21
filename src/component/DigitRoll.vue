@@ -94,7 +94,9 @@ export default {
         this.resetStat(newLen);
       }
 
-      this.traverseChar();
+      setTimeout(() => {
+        this.traverseChar();
+      }, 50);
     },
   },
 
@@ -159,7 +161,6 @@ export default {
       const vm = this;
       const { digitStatArr, digits, beforeDigits, executeStra } = vm;
       const completeRoll = vm.getComplete(digitStatArr.length);
-
       rollLock = true;
       vm.$emit('roll-start');
 
@@ -177,6 +178,7 @@ export default {
         } else {
           dis = next - before;
         }
+
         if (supportCss('transform')) {
           stat.noTransition = !!0;
           vm.beginCssRoll(dis, i, completeRoll, opt);
@@ -307,7 +309,9 @@ export default {
         vm.resetStat(vm.digits.length);
       }
 
-      vm.traverseChar(opts);
+      setTimeout(() => {
+        vm.traverseChar(opts);
+      }, 50);
     },
   },
 

@@ -23,26 +23,31 @@ export default {
       digits: '0000',
     };
   },
+  mounted() {
+    setInterval(() => {
+      const num = randomNum(100, 10000);
+      console.log('num', num);
+      this.digits = num;
+    }, 2000);
+  },
   methods: {
     changeDigit() {
-      // this.digits = this.input;
+      this.$refs.digitroll.setDigit(this.input, {
+        flipStra: this.flipStra,
+        easeFn: 'Cubic.easeInOut',
+        dur: 800,
+      });
 
-      // this.$refs.digitroll.setDigit(this.input, {
-      //   flipStra: this.flipStra,
-      //   easeFn: 'Cubic.easeInOut',
-      //   dur: 800,
-      // });
-
-      this.$refs.digitroll.setDigit([{
-        value: 2,
-        dur: 1800,
-      }, {
-        value: 5,
-        dur: 1200,
-      }, {
-        value: 9,
-        dur: 600,
-      }]);
+      // this.$refs.digitroll.setDigit([{
+      //   value: 2,
+      //   dur: 1800,
+      // }, {
+      //   value: 5,
+      //   dur: 1200,
+      // }, {
+      //   value: 9,
+      //   dur: 600,
+      // }]);
     },
     flipStra(before, next) {
       return true;
@@ -67,6 +72,20 @@ export default {
     DigitRoll,
   },
 };
+
+function randomNum(minNum,maxNum){ 
+  switch(arguments.length){ 
+    case 1: 
+        return parseInt(Math.random()*minNum+1,10); 
+    break; 
+    case 2: 
+        return parseInt(Math.random()*(maxNum-minNum+1)+minNum,10); 
+    break; 
+        default: 
+            return 0; 
+        break; 
+  } 
+}
 </script>
 
 <style>

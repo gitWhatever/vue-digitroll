@@ -15,7 +15,8 @@ module.exports = {
         publicPath: '/lib/',
         filename: 'index.js',
         library: 'VueDigitRoll',
-        libraryTarget: 'commonjs',
+        libraryTarget: 'umd',
+        umdNamedDefine: true
     },
     externals: {
         vue: {

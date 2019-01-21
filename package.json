@@ -1,6 +1,6 @@
 {
   "name": "@huoyu/vue-digitroll",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "vue组件实现数字滚动效果，轻量，灵活",
   "author": "火禹 <Benren9347@gmail.com>",
   "keywords": [
