@@ -10,7 +10,7 @@ vue实现的数字滚动组件
 
 ## Installation
 ```
-$ npm i -S @huoyu/vue-digitroll   //之前的包无法正常import，目前问题已解决，更新到1.0.3可以正常使用~
+$ npm i -S @huoyu/vue-digitroll   //之前的包无法正常import，目前问题已解决，更新到1.0.4可以正常使用~
 ```
 
 ## basic usage
