@@ -193,6 +193,10 @@ export default {
       const transitionPrefix = supportCss('transition');
       const transitionEnd = (function whichTransitionEvent(prefix) {
         const pre = prefix.toLowerCase();
+        //ie11兼容性，ie11不支持mstransitionend
+        if (!!window.ActiveXObject || 'ActiveXObject' in window) {
+            return 'transitionend';
+        }
         if (typeof prefix === 'boolean' || pre === 'moz') {
           return 'transitionend';
         }
